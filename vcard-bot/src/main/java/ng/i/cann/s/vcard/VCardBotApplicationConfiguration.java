@@ -1,4 +1,4 @@
-package ng.i.cann.s.vcard.config;
+package ng.i.cann.s.vcard;
 
 import io.dropwizard.Configuration;
 import ng.i.cann.s.vcard.twilio.TwilioConfiguration;
@@ -15,6 +15,12 @@ public class VCardBotApplicationConfiguration extends Configuration {
 
 	public TwilioConfiguration getTwilio() {
 		return twilio;
+	}
+
+	private ExternalUrlConfiguration externalUrl = new ExternalUrlConfiguration();
+
+	public ExternalUrlConfiguration getExternalUrl() {
+		return externalUrl;
 	}
 
 }

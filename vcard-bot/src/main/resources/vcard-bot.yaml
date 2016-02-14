@@ -1,5 +1,12 @@
 twilio:
-  authToken: XXXXXXXXXXXXXXXXXXXXXXXX  
+  accountSid: ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  authToken: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  sender: +1XXXXXXXXXX
+
+externalUrl:
+  scheme: http
+  host: localhost
+  port: 8080
 
 server:
   applicationConnectors:

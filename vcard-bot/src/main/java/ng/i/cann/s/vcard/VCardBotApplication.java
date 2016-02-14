@@ -7,17 +7,28 @@ import io.dropwizard.setup.Environment;
 import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import ng.i.cann.s.vcard.config.VCardBotApplicationConfiguration;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import ng.i.cann.s.vcard.resources.MessageResource;
 import ng.i.cann.s.vcard.resources.VCardResource;
 
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.twilio.sdk.TwilioRestClient;
+
+import ezvcard.VCard;
 
 /**
  * The Slack V-Card Bot application.
@@ -61,12 +72,21 @@ public class VCardBotApplication extends Application<VCardBotApplicationConfigur
 			log.info("    {}", line);
 		}
 
+		Map<String, VCard> vcards = new HashMap<>();
+		ExecutorService updateCards = Executors.newCachedThreadPool();
+		ExecutorService sendCards = Executors.newCachedThreadPool();
+		ClientConfig cc = new ClientConfig().property(ClientProperties.FOLLOW_REDIRECTS, true);
+		Client client = ClientBuilder.newClient(cc);
+		String sender = configuration.getTwilio().getSender();
+		TwilioRestClient twilioRestClient = new TwilioRestClient(configuration.getTwilio().getAccountSid(), configuration.getTwilio().getAuthToken());
+
 		log.info("Setting up SMS endpoint resource");
-		MessageResource messageResource = new MessageResource();
+		MessageResource messageResource = new MessageResource(vcards, updateCards, sendCards, client, sender, twilioRestClient,
+				configuration.getExternalUrl());
 		environment.jersey().register(messageResource);
 
 		log.info("Setting up v-card resource");
-		VCardResource vcardResource = new VCardResource();
+		VCardResource vcardResource = new VCardResource(vcards);
 		environment.jersey().register(vcardResource);
 
 		log.info("Initialization complete");

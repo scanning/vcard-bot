@@ -10,6 +10,9 @@ public class TwilioConfiguration {
 	@JsonProperty
 	private String authToken;
 
+	@JsonProperty
+	private String sender;
+
 	public String getAccountSid() {
 		return accountSid;
 	}
@@ -18,12 +21,17 @@ public class TwilioConfiguration {
 		return authToken;
 	}
 
+	public String getSender() {
+		return sender;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((accountSid == null) ? 0 : accountSid.hashCode());
 		result = prime * result + ((authToken == null) ? 0 : authToken.hashCode());
+		result = prime * result + ((sender == null) ? 0 : sender.hashCode());
 		return result;
 	}
 
@@ -46,12 +54,17 @@ public class TwilioConfiguration {
 				return false;
 		} else if (!authToken.equals(other.authToken))
 			return false;
+		if (sender == null) {
+			if (other.sender != null)
+				return false;
+		} else if (!sender.equals(other.sender))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "TwilioConstants [accountSid=" + accountSid + ", authToken=" + authToken + "]";
+		return "TwilioConfiguration [accountSid=" + accountSid + ", authToken=" + authToken + ", from=" + sender + "]";
 	}
 
 }

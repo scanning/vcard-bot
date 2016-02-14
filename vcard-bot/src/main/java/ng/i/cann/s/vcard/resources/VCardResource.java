@@ -1,14 +1,15 @@
 package ng.i.cann.s.vcard.resources;
 
-import java.io.File;
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
+
+import ezvcard.VCard;
 
 /**
  * Resource to obtain a v-card.
@@ -19,14 +20,25 @@ import com.codahale.metrics.annotation.Timed;
 @Path("/vcard")
 public class VCardResource {
 
-	public VCardResource() {
+	private final Map<String, VCard> vcards;
+
+	public VCardResource(Map<String, VCard> vcards) {
+		this.vcards = vcards;
 	}
 
 	@GET
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("{number}")
+	@Produces("text/vcard")
 	@Timed
-	public File getVCard(@PathParam("identifier") String identifier) {
-		return null;
+	public String getVCard(@PathParam("number") String number) {
+		String result = null;
+		if (number != null && number.length() > 0 && vcards.containsKey(number)) {
+			VCard vcard = vcards.get(number);
+			if (vcard != null) {
+				result = vcard.write();
+			}
+		}
+		return result;
 	}
 
 }
