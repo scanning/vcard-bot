@@ -1,6 +1,7 @@
 package ng.i.cann.s.vcard;
 
 import io.dropwizard.Configuration;
+import ng.i.cann.s.vcard.slack.SlackConfiguration;
 import ng.i.cann.s.vcard.twilio.TwilioConfiguration;
 
 /**
@@ -21,6 +22,12 @@ public class VCardBotApplicationConfiguration extends Configuration {
 
 	public ExternalUrlConfiguration getExternalUrl() {
 		return externalUrl;
+	}
+
+	private SlackConfiguration slack = new SlackConfiguration();
+
+	public SlackConfiguration getSlack() {
+		return slack;
 	}
 
 }

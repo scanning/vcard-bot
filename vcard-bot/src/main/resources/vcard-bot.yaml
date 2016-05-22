@@ -3,6 +3,13 @@ twilio:
   authToken: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   sender: +1XXXXXXXXXX
 
+slack:
+  token: XXXXXXXXXXXXXXXXXXXXXXXX
+  teamId: XXXXXXXXX
+  teamDomain: XXXXXXX
+  commands: 
+    - /vcardsearch
+
 externalUrl:
   scheme: http
   host: localhost

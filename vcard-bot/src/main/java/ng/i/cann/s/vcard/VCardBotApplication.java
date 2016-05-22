@@ -1,9 +1,5 @@
 package ng.i.cann.s.vcard;
 
-import io.dropwizard.Application;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-
 import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
@@ -15,9 +11,7 @@ import java.util.concurrent.Executors;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-import ng.i.cann.s.vcard.resources.MessageResource;
-import ng.i.cann.s.vcard.resources.VCardResource;
-
+import org.apache.http.client.HttpClient;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
@@ -29,6 +23,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.twilio.sdk.TwilioRestClient;
 
 import ezvcard.VCard;
+import io.dropwizard.Application;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import ng.i.cann.s.vcard.resources.MessageResource;
+import ng.i.cann.s.vcard.resources.SlackResource;
+import ng.i.cann.s.vcard.resources.VCardResource;
 
 /**
  * The Slack V-Card Bot application.
@@ -75,10 +75,12 @@ public class VCardBotApplication extends Application<VCardBotApplicationConfigur
 		Map<String, VCard> vcards = new HashMap<>();
 		ExecutorService updateCards = Executors.newCachedThreadPool();
 		ExecutorService sendCards = Executors.newCachedThreadPool();
+		ExecutorService searchCards = Executors.newCachedThreadPool();
 		ClientConfig cc = new ClientConfig().property(ClientProperties.FOLLOW_REDIRECTS, true);
 		Client client = ClientBuilder.newClient(cc);
 		String sender = configuration.getTwilio().getSender();
 		TwilioRestClient twilioRestClient = new TwilioRestClient(configuration.getTwilio().getAccountSid(), configuration.getTwilio().getAuthToken());
+		HttpClient httpClient = twilioRestClient.getHttpClient();
 
 		log.info("Setting up SMS endpoint resource");
 		MessageResource messageResource = new MessageResource(vcards, updateCards, sendCards, client, sender, twilioRestClient,
@@ -88,6 +90,12 @@ public class VCardBotApplication extends Application<VCardBotApplicationConfigur
 		log.info("Setting up v-card resource");
 		VCardResource vcardResource = new VCardResource(vcards);
 		environment.jersey().register(vcardResource);
+
+		log.info("Setting up Slack resource");
+		String token = configuration.getSlack().getToken();
+		String teamId = configuration.getSlack().getTeamId();
+		SlackResource slackResource = new SlackResource(token, teamId, searchCards, vcards, httpClient);
+		environment.jersey().register(slackResource);
 
 		log.info("Initialization complete");
 	}
