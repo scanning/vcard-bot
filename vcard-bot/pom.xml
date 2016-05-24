@@ -27,6 +27,16 @@
 			<artifactId>ez-vcard</artifactId>
 			<version>0.9.9</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>3.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mongojack</groupId>
+			<artifactId>mongojack</artifactId>
+			<version>2.5.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -36,7 +46,8 @@
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>1.6</version>
 				<configuration>
-					<createDependencyReducedPom>false</createDependencyReducedPom>
+					<createDependencyReducedPom>true</createDependencyReducedPom>
+					<finalName>vcard-bot</finalName>
 					<filters>
 						<filter>
 							<artifact>*:*</artifact>
@@ -47,8 +58,7 @@
 							</excludes>
 						</filter>
 					</filters>
-				</configuration>
-				<executions>
+				</configuration>				<executions>
 					<execution>
 						<phase>package</phase>
 						<goals>

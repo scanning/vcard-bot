@@ -1,6 +1,5 @@
 package ng.i.cann.s.vcard.resources;
 
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -17,9 +16,9 @@ import org.apache.http.client.HttpClient;
 
 import com.codahale.metrics.annotation.Timed;
 
-import ezvcard.VCard;
 import ng.i.cann.s.vcard.slack.SlackConstants;
 import ng.i.cann.s.vcard.slack.SlackResponse;
+import ng.i.cann.s.vcard.state.VCardDirectory;
 import ng.i.cann.s.vcard.workers.SearchCards;
 
 /**
@@ -34,17 +33,17 @@ public class SlackResource {
 	private String token;
 	private String teamId;
 	private final ExecutorService searchCardsExecutor;
-	private final Map<String, VCard> vcards;
+	private final VCardDirectory directory;
 	private final HttpClient httpClient;
 
 	@Context
 	private HttpServletResponse response;
 
-	public SlackResource(String token, String teamId, ExecutorService searchCardsExecutor, Map<String, VCard> vcards, HttpClient httpClient) {
+	public SlackResource(String token, String teamId, ExecutorService searchCardsExecutor, VCardDirectory directory, HttpClient httpClient) {
 		this.token = token;
 		this.teamId = teamId;
 		this.searchCardsExecutor = searchCardsExecutor;
-		this.vcards = vcards;
+		this.directory = directory;
 		this.httpClient = httpClient;
 	}
 
@@ -70,7 +69,7 @@ public class SlackResource {
 
 		String[] args = text.split("\\s+");
 		if (args != null && args.length > 0) {
-			SearchCards search = new SearchCards(args[0], responseUrl, vcards, httpClient);
+			SearchCards search = new SearchCards(args[0], responseUrl, directory, httpClient);
 			searchCardsExecutor.execute(search);
 			response = new SlackResponse("Got it! I'll be with you shortly.");
 		} else {

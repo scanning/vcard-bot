@@ -2,6 +2,7 @@ package ng.i.cann.s.vcard;
 
 import io.dropwizard.Configuration;
 import ng.i.cann.s.vcard.slack.SlackConfiguration;
+import ng.i.cann.s.vcard.state.mongo.MongoConfiguration;
 import ng.i.cann.s.vcard.twilio.TwilioConfiguration;
 
 /**
@@ -28,6 +29,12 @@ public class VCardBotApplicationConfiguration extends Configuration {
 
 	public SlackConfiguration getSlack() {
 		return slack;
+	}
+
+	private MongoConfiguration mongo = new MongoConfiguration();
+
+	public MongoConfiguration getMongo() {
+		return mongo;
 	}
 
 }

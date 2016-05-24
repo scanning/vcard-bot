@@ -15,6 +15,13 @@ externalUrl:
   host: localhost
   port: 8080
 
+mongo:
+  user:
+  password:
+  host: localhost
+  port: 27017
+  name: vcard-bot
+
 server:
   applicationConnectors:
     - type: http
@@ -32,4 +39,3 @@ logging:
       target: stdout
   loggers:
     ng.i.cann.s: ALL
-

@@ -7,21 +7,30 @@ public class TwilioConfiguration {
 	@JsonProperty
 	private String accountSid;
 
+	public String getAccountSid() {
+		if (accountSid == null) {
+			accountSid = System.getenv("TWILIO_ACCOUNT_SID");
+		}
+		return accountSid;
+	}
+
 	@JsonProperty
 	private String authToken;
+
+	public String getAuthToken() {
+		if (authToken == null) {
+			authToken = System.getenv("TWILIO_AUTH_TOKEN");
+		}
+		return authToken;
+	}
 
 	@JsonProperty
 	private String sender;
 
-	public String getAccountSid() {
-		return accountSid;
-	}
-
-	public String getAuthToken() {
-		return authToken;
-	}
-
 	public String getSender() {
+		if (sender == null) {
+			sender = System.getenv("TWILIO_SENDER");
+		}
 		return sender;
 	}
 

@@ -4,7 +4,6 @@ import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,15 +19,21 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.twilio.sdk.TwilioRestClient;
 
-import ezvcard.VCard;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import ng.i.cann.s.vcard.resources.MessageResource;
 import ng.i.cann.s.vcard.resources.SlackResource;
 import ng.i.cann.s.vcard.resources.VCardResource;
+import ng.i.cann.s.vcard.state.VCardDirectory;
+import ng.i.cann.s.vcard.state.mongo.MongoConfiguration;
+import ng.i.cann.s.vcard.state.mongo.MongoManaged;
+import ng.i.cann.s.vcard.state.mongo.VCardDirectoryMongoImpl;
 
 /**
  * The Slack V-Card Bot application.
@@ -72,7 +77,20 @@ public class VCardBotApplication extends Application<VCardBotApplicationConfigur
 			log.info("    {}", line);
 		}
 
-		Map<String, VCard> vcards = new HashMap<>();
+		log.info("Creating Mongo objects");
+		MongoConfiguration mongoConfig = configuration.getMongo();
+		MongoClientURI uri = new MongoClientURI(mongoConfig.getURI());
+		MongoClient mongoClient = new MongoClient(uri);
+		@SuppressWarnings("deprecation")
+		DB db = mongoClient.getDB(uri.getDatabase());
+
+		MongoManaged mongoManaged = new MongoManaged(mongoClient);
+		environment.lifecycle().manage(mongoManaged);
+
+		log.info("Creating state objects");
+		VCardDirectory directory = new VCardDirectoryMongoImpl(db, "vcard.directory");
+
+		log.info("Creating executor objects");
 		ExecutorService updateCards = Executors.newCachedThreadPool();
 		ExecutorService sendCards = Executors.newCachedThreadPool();
 		ExecutorService searchCards = Executors.newCachedThreadPool();
@@ -83,18 +101,18 @@ public class VCardBotApplication extends Application<VCardBotApplicationConfigur
 		HttpClient httpClient = twilioRestClient.getHttpClient();
 
 		log.info("Setting up SMS endpoint resource");
-		MessageResource messageResource = new MessageResource(vcards, updateCards, sendCards, client, sender, twilioRestClient,
+		MessageResource messageResource = new MessageResource(directory, updateCards, sendCards, client, sender, twilioRestClient,
 				configuration.getExternalUrl());
 		environment.jersey().register(messageResource);
 
 		log.info("Setting up v-card resource");
-		VCardResource vcardResource = new VCardResource(vcards);
+		VCardResource vcardResource = new VCardResource(directory);
 		environment.jersey().register(vcardResource);
 
 		log.info("Setting up Slack resource");
 		String token = configuration.getSlack().getToken();
 		String teamId = configuration.getSlack().getTeamId();
-		SlackResource slackResource = new SlackResource(token, teamId, searchCards, vcards, httpClient);
+		SlackResource slackResource = new SlackResource(token, teamId, searchCards, directory, httpClient);
 		environment.jersey().register(slackResource);
 
 		log.info("Initialization complete");

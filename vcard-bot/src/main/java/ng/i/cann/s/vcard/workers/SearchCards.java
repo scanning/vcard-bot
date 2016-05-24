@@ -3,7 +3,6 @@ package ng.i.cann.s.vcard.workers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -17,6 +16,7 @@ import ezvcard.property.FormattedName;
 import ezvcard.property.Telephone;
 import ng.i.cann.s.vcard.slack.SlackAttachment;
 import ng.i.cann.s.vcard.slack.SlackResponse;
+import ng.i.cann.s.vcard.state.VCardDirectory;
 
 /**
  * Worker that searches through cards.
@@ -28,21 +28,21 @@ public class SearchCards implements Runnable {
 
 	private final String search;
 	private final String responseUrl;
-	private final Map<String, VCard> vcards;
+	private final VCardDirectory directory;
 	private final HttpClient httpClient;
 
-	public SearchCards(String search, String responseUrl, Map<String, VCard> vcards, HttpClient httpClient) {
+	public SearchCards(String search, String responseUrl, VCardDirectory directory, HttpClient httpClient) {
 		this.search = search;
 		this.responseUrl = responseUrl;
-		this.vcards = vcards;
+		this.directory = directory;
 		this.httpClient = httpClient;
 	}
 
 	@Override
 	public void run() {
 		List<VCard> results = null;
-		for (String number : vcards.keySet()) {
-			VCard vcard = vcards.get(number);
+		for (String number : directory.allNumbers()) {
+			VCard vcard = directory.lookup(number);
 			if (vcard != null) {
 				List<FormattedName> names = vcard.getFormattedNames();
 				for (FormattedName formattedName : names) {
