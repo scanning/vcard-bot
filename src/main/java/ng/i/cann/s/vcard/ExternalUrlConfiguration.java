@@ -17,7 +17,7 @@ public class ExternalUrlConfiguration {
 	private String host;
 
 	@JsonProperty
-	private int port;
+	private int port = -1;
 
 	public String getScheme() {
 		if (scheme == null) {
